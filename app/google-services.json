@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "841427310943",
+    "firebase_url": "https://piezosole-30b73.firebaseio.com",
+    "project_id": "piezosole-30b73",
+    "storage_bucket": "piezosole-30b73.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:841427310943:android:57f32790fb2ac4006e3eea",
+        "android_client_info": {
+          "package_name": "com.example.piezosole"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "841427310943-d7l4n0jimp82lh48f3gaqqv9v12jbu8n.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAQjMKD7_MNjzHJ2VveEGH0nZCScadDhU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "841427310943-d7l4n0jimp82lh48f3gaqqv9v12jbu8n.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

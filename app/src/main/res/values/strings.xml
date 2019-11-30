@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">PiezoSole</string>
+    <string name="user_login">User Login</string>
+    <string name="enter_your_email">Enter your email</string>
+    <string name="enter_your_password">Enter your password</string>
+    <string name="login">Login</string>
+    <string name="new_user_register_here">New User? Register Here</string>
+    <string name="signin">signin</string>
+    <string name="register">Register</string>
+    <string name="user_registration">User Registration</string>
+    <string name="age">Age</string>
+    <string name="already_registered_sign_in_here">Already Registered? Sign in here</string>
+    <string name="register_user">Register User</string>
+    <string name="height_in_cm">Height in cm</string>
+    <string name="weight">Weight</string>
+    <string name="enter_your_username">Enter your username</string>
+
+</resources>
