@@ -53,13 +53,21 @@ import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 
 import java.io.OutputStream;
+import java.util.concurrent.TimeUnit;
 
+import static android.os.Environment.getExternalStoragePublicDirectory;
 
 
 public class Dashboard extends AppCompatActivity {
     private ImageView foot;
     private Button shared, record, capture;
+    private  int minval1 = 1;
+    private int minval2 = 10;
+    private int minval3 = 15;
     private int minval = 25;
+    private  int maxval1 = 35;
+    private  int maxval2 = 40;
+    private int maxval3 = 50;
     private int maxval = 30;
     CardView card, card2;
     private String sharePath = "no";
@@ -69,6 +77,7 @@ public class Dashboard extends AppCompatActivity {
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
     private static final int REQUEST_ENABLE_BT=1;
     private String deviceName,hardwareAddress;
+   private  File image;
 
 
     List<String[]> allRows;
@@ -132,41 +141,68 @@ public class Dashboard extends AppCompatActivity {
 //                        }
 //                    }
 //                }
-                InputStream inputStream = getResources().openRawResource(R.raw.data);
-                CSVFile csvFile = new CSVFile(inputStream);
-                List scoreList = csvFile.read();
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        InputStream inputStream = getResources().openRawResource(R.raw.data);
+                        CSVFile csvFile = new CSVFile(inputStream);
+                        List scoreList = csvFile.read();
 
-                for (Object scoreData : scoreList) {
-                    // String score;
+                        for (Object scoreData : scoreList) {
+                            // String score;
 
-                    //score = scoreData[i];
-                    int iconcolor;
-                    String score = (String) scoreData;
-                    int val = Integer.parseInt(score);
-                    if (val <= minval) {
-                        Log.d("val", score);
-                        iconcolor = Color.YELLOW;
-//                        card.setBackgroundColor(Color.YELLOW);
-//                        card2.setBackgroundColor(Color.YELLOW);
-                    } else if (val < maxval) {
-                        Log.d("val", score);
-                        iconcolor = Color.GREEN;
-//                        card.setBackgroundColor(Color.GREEN);
-//                        card2.setBackgroundColor(Color.GREEN);
-                    }
-                    //  else iconColor = Color.RED;
-                    else {
-                        Log.d("val", score);
-                        iconcolor = Color.RED;
-//                        card.setBackgroundColor(Color.RED);
-//                        card2.setBackgroundColor(Color.RED);//iconColor, PorterDuff.Mode.MULTIPLY);
-                    }
-                    card.setBackgroundColor(iconcolor);
-                    card2.setBackgroundColor(iconcolor);
+                            //score = scoreData[i];
+                            int iconcolor;
+                            String score = (String) scoreData;
+                            int val = Integer.parseInt(score);
+                            if (val <= minval2 ) {
+                                Log.d("val", score);
+                                //iconcolor = Color.YELLOW;
+                                card.setBackgroundColor(Color.GREEN);
+                                card2.setBackgroundColor(Color.GREEN);
+                            } else if (val < minval3) {
+                                Log.d("val", score);
+                                //iconcolor = Color.GREEN;
+                                card.setBackgroundColor(Color.parseColor("#c6d97f"));
+                                card2.setBackgroundColor(Color.parseColor("#c6d97f"));
+                            }
+                            //  else iconColor = Color.RED;
+                            else if(val< minval){
+                                Log.d("val", score);
+                                //iconcolor = Color.RED;
+                                card.setBackgroundColor(Color.parseColor("#d5e29f"));
+                                card2.setBackgroundColor(Color.parseColor("#d5e29f"));//iconColor, PorterDuff.Mode0000.MULTIPLY);
+                            }
+                            else if(val < maxval){
+                                card.setBackgroundColor(Color.parseColor("#FFFF99"));
+                                card2.setBackgroundColor(Color.parseColor("#FFFF99"));
+                            }
+                            else if(val < maxval1){
+                                card.setBackgroundColor(Color.YELLOW);
+                                card2.setBackgroundColor(Color.YELLOW);
+                            }
+                            else if(val <maxval2){
+                                card.setBackgroundColor(Color.parseColor("#FFDAB9"));
+                                card2.setBackgroundColor(Color.parseColor("#FFDAB9"));
+                            }
+                            else {
+                                card.setBackgroundColor(Color.RED);
+                                card2.setBackgroundColor(Color.RED);
+                            }
+
+                            try {
+                                TimeUnit.SECONDS.sleep(2);
+                            }catch(InterruptedException ex){
+                                Thread.currentThread().interrupt();
+                            }
 //
 //                    // val = Integer.parseInt(score);
 
-                }
+                        }
+                    }
+                };
+                Thread newthread = new Thread(runnable);
+                newthread.start();
 
             }
         });
@@ -176,20 +212,40 @@ public class Dashboard extends AppCompatActivity {
             public void onClick(View v) {
                 //check if all fields are accurate
                 //If yes,
-                if (!sharePath.equals("no")) {
-                    share(sharePath);
+                Uri imgUri = Uri.parse(image.getAbsolutePath());
+                Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
+                whatsappIntent.setType("text/plain");
+                whatsappIntent.setPackage("com.whatsapp");
+                whatsappIntent.putExtra(Intent.EXTRA_TEXT, "The text you wanted to share");
+                whatsappIntent.putExtra(Intent.EXTRA_STREAM, imgUri);
+                whatsappIntent.setType("image/jpeg");
+                whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                try {
+                    startActivity(whatsappIntent);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    //ToastHelper.MakeShortText("Whatsapp have not been installed.");
                 }
 
             }
 
         });
+
         capture.setOnClickListener(new View.OnClickListener() {
-            ConstraintLayout parent = findViewById(R.id.relativeLayout);
+            //ConstraintLayout parent = findViewById(R.id.relativeLayout);
 
             @Override
             public void onClick(View v) {
-                takescreenshot();
-                //check if all fields are accurate
+                v = findViewById(R.id.relativeLayout);
+                Bitmap bitmap = Bitmap.createBitmap(v.getWidth(),
+                v.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        v.draw(canvas);
+//                 Drawable drawable = foot.getDrawable();
+//                 Bitmap bmp = ((BitmapDrawable)drawable).getBitmap();
+                 final String name = "report";
+                 saveImage(bitmap,name);
+                 //check if all fields are accurate
                 //If yes,
 //              Drawable  drawable = getResources().getDrawable(R.drawable.images);
 //
@@ -211,6 +267,103 @@ public class Dashboard extends AppCompatActivity {
         });
 
     }
+
+    private void saveImage(Bitmap finalBitmap, String image_name) {
+
+        File root = Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_DCIM );
+        String fname = "Image-" + image_name+ ".jpg";
+        File file = new File(root + "/Screenshots/");
+//        File myDir = new File(root + "/myimg");
+//        myDir.mkdirs();
+
+        try {
+            image = File.createTempFile(
+                    fname,  // prefix
+                    ".jpg",         // suffix
+                    file    // directorye.printStackTrace();
+            );
+            FileOutputStream out = new FileOutputStream(image);
+            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            out.flush();
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+//        String fname = "Image-" + image_name+ ".jpg";
+//        File file = new File(root + "/DCIM/", fname);
+//        if (file.exists()) file.delete();
+//        Log.i("LOAD", root + fname);
+//        try {
+//            FileOutputStream out = new FileOutputStream(file);
+//            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+//            out.flush();
+//            out.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+    }
+//    public void screenshot(View view) throws IOException {
+//        Bitmap bitmap = Bitmap.createBitmap(view.getWidth(),
+//                view.getHeight(), Bitmap.Config.ARGB_8888);
+//        Canvas canvas = new Canvas(bitmap);
+//        view.draw(canvas);
+//        Date now = new Date();
+//        android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+//        String mPath = Environment.getExternalStorageState() + "/" + now + ".jpg";
+//        File imageFile = new File(mPath);
+//
+//        FileOutputStream outputStream = new FileOutputStream(imageFile);
+//        int quality = 100;
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+//        outputStream.flush();
+//        outputStream.close();
+//        openScreenshot(imageFile);
+//        //return bitmap;
+//    }
+//    private void openScreenshot(File imageFile) {
+//        Intent intent = new Intent();
+//        intent.setAction(Intent.ACTION_VIEW);
+//        Uri uri = Uri.fromFile(imageFile);
+//        intent.setDataAndType(uri, "image/*");
+//        startActivity(intent);
+//    }
+//private void takeScreenshot() {
+//    Date now = new Date();
+//    android.text.format.DateFormat.format("yyyy-MM-dd_hh:mm:ss", now);
+//
+//    try {
+//        // image naming and path  to include sd card  appending name you choose for file
+//        String mPath = Environment.getExternalStorageState() + "/" + now + ".jpg";
+//
+//        // create bitmap screen capture
+//        View v1 = getWindow().getDecorView().getRootView();
+//       // v1.set .setDrawingCacheEnabled(true);
+//        Bitmap bitmap = Bitmap.createBitmap(v1.get .getDrawingCache());
+//       // v1.setDrawingCacheEnabled(false);
+//
+//        File imageFile = new File(mPath);
+//
+//        FileOutputStream outputStream = new FileOutputStream(imageFile);
+//        int quality = 100;
+//        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, outputStream);
+//        outputStream.flush();
+//        outputStream.close();
+//
+//        openScreenshot(imageFile);
+//    } catch (Throwable e) {
+//        // Several error may come out with file handling or DOM
+//        e.printStackTrace();
+//    }
+//}
+//    private void openScreenshot(File imageFile) {
+//        Intent intent = new Intent();
+//        intent.setAction(Intent.ACTION_VIEW);
+//        Uri uri = Uri.fromFile(imageFile);
+//        intent.setDataAndType(uri, "image/*");
+//        startActivity(intent);
+//    }
+//}
+
 //    void connect(BluetoothDevice btd)
 //    {
 //        try {
@@ -233,68 +386,33 @@ public class Dashboard extends AppCompatActivity {
 //            }
 //        }
 //    }
-  private void takescreenshot(){
-      BitmapDrawable draw = (BitmapDrawable) foot.getDrawable();
-      Bitmap bitmap = draw.getBitmap();
-
-      FileOutputStream outStream = null;
-      File sdCard = Environment.getExternalStorageDirectory();
-      File dir = new File(sdCard.getAbsolutePath() + "/Gallery");
-      dir.mkdirs();
-      String fileName = String.format("%d.jpg", System.currentTimeMillis());
-      try{
-          File outFile = new File(dir, fileName);
-          outStream = new FileOutputStream(outFile);
-          bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
-          try {
-              outStream.flush();
-              outStream.close();
-          }
-          catch(IOException e){
-              Log.e("val","Error");
-          }
-      }
-      catch(FileNotFoundException e){
-          Log.e("val","error");
-      }
-  }
-
-    private void share(String sharePath) {
-//        Uri imgUri = Uri.parse(sharePath);
-//        Intent whatsappIntent = new Intent(Intent.ACTION_SEND);
-//        whatsappIntent.setType("text/plain");
-//        whatsappIntent.setPackage("com.whatsapp");
-//        whatsappIntent.putExtra(Intent.EXTRA_TEXT, "The text you wanted to share");
-//        whatsappIntent.putExtra(Intent.EXTRA_STREAM, imgUri);
-//        whatsappIntent.setType("image/jpeg");
-//        whatsappIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//  private void takescreenshot(){
+//      BitmapDrawable draw = (BitmapDrawable) foot.getDrawable();
+//      Bitmap bitmap = draw.getBitmap();
 //
-//        try {
-//            startActivity(whatsappIntent);
-//        } catch (android.content.ActivityNotFoundException ex) {
-//            Toast.makeText(getBaseContext(),"Whatsapp have not been installed.",Toast.LENGTH_LONG).show();
-//        }
-      //  private void shareImage() {
-            Intent share = new Intent(Intent.ACTION_SEND);
+//      FileOutputStream outStream = null;
+//      File sdCard = Environment.getExternalStorageDirectory();
+//      File dir = new File(sdCard.getAbsolutePath() + "/Gallery");
+//      dir.mkdirs();
+//      String fileName = String.format("%d.jpg", System.currentTimeMillis());
+//      try{
+//          File outFile = new File(dir, fileName);
+//          outStream = new FileOutputStream(outFile);
+//          bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outStream);
+//          try {
+//              outStream.flush();
+//              outStream.close();
+//          }
+//          catch(IOException e){
+//              Log.e("val","Error");
+//          }
+//      }
+//      catch(FileNotFoundException e){
+//          Log.e("val","error");
+//      }
+//  }
 
-            // If you want to share a png image only, you can do:
-            // setType("image/png"); OR for jpeg: setType("image/jpeg");
-            share.setType("image/*");
 
-            // Make sure you put example png image named myImage.png in your
-            // directory
-            String imagePath = Environment.getExternalStorageDirectory()
-                    + "/images.jpeg";
-
-            File imageFileToShare = new File(imagePath);
-
-            Uri uri = Uri.fromFile(imageFileToShare);
-            share.putExtra(Intent.EXTRA_STREAM, uri);
-
-            startActivity(Intent.createChooser(share, "Share Image!"));
-       // }
-
-    }
 
 
 
